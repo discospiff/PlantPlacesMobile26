@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">PlantPlaces</string>
     <string name="action_settings">Settings</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="gpsage">GPS Age</string>
+    <string name="zeropointzero">0.0</string>
+    <string name="plantname">Plant Name</string>
+    <string name="location">Location</string>
+    <string name="description">Description</string>
 </resources>
