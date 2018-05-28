@@ -45,9 +45,21 @@ public class GPSAPlant extends PlantPlacesActivity {
 
     @OnClick(R.id.btnPause)
     public void doIt() {
-        String plantName = actPlantName.getText().toString();
-        String location = actLocation.getText().toString();
-        Toast.makeText(this, "Plant Name: " + plantName + " Location " + location, Toast.LENGTH_LONG).show();
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.gpsCoordinatorLayout), "Paused GPS", Snackbar.LENGTH_LONG);
+        snackbar.setAction("UNDO", new UndoListener());
+        snackbar.show();
+    }
+
+    class UndoListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+            // this is the method that will be invoked when the user clicks on the snackbar's action
+            String plantName = actPlantName.getText().toString();
+            String location = actLocation.getText().toString();
+            Toast.makeText(GPSAPlant.this, "Plant Name: " + plantName + " Location " + location, Toast.LENGTH_LONG).show();
+
+        }
     }
 
 
