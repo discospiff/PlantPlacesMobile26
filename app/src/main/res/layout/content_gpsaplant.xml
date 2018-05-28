@@ -68,7 +68,7 @@
         app:layout_constraintTop_toBottomOf="@+id/txtLongitude" />
 
     <ImageButton
-        android:id="@+id/button"
+        android:id="@+id/btnPause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -79,7 +79,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <AutoCompleteTextView
-        android:id="@+id/autoCompleteTextView"
+        android:id="@+id/actPlantName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -91,7 +91,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
     <AutoCompleteTextView
-        android:id="@+id/autoCompleteTextView2"
+        android:id="@+id/actLocation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -100,10 +100,10 @@
         android:hint="@string/location"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView" />
+        app:layout_constraintTop_toBottomOf="@+id/actPlantName" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/edtDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -114,7 +114,7 @@
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/autoCompleteTextView2" />
+        app:layout_constraintTop_toBottomOf="@+id/actLocation" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -125,10 +125,10 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText2">
+        app:layout_constraintTop_toBottomOf="@+id/edtDescription">
 
         <ImageButton
-            android:id="@+id/button2"
+            android:id="@+id/btnSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -136,6 +136,7 @@
             android:text="Button" />
 
         <ImageButton
+            android:id="@+id/btnOpen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -143,12 +144,19 @@
             android:text="Button" />
 
         <ImageButton
-            android:id="@+id/button3"
+            android:id="@+id/btnPhoto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:src="@drawable/ic_camera"
             android:text="Button" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_upload"
+            app:srcCompat="@drawable/ic_upload" />
     </LinearLayout>
 
     <ImageView

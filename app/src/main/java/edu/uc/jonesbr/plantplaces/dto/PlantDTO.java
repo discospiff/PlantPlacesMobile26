@@ -61,4 +61,9 @@ public class PlantDTO {
     public void setCacheId(int cacheId) {
         this.cacheId = cacheId;
     }
+
+    @Override
+    public String toString() {
+        return genus + " " + species + " " + cultivar + " "  + common;
+    }
 }
