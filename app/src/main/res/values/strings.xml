@@ -10,4 +10,6 @@
     <string name="description">Description</string>
     <string name="title_activity_gpsaplant">GPS A Plant</string>
     <string name="title_activity_color_capture">ColorCaptureActivity</string>
+    <string name="searchbycolor">Search By Color</string>
+    <string name="gpsaplant">GPS a Plant</string>
 </resources>

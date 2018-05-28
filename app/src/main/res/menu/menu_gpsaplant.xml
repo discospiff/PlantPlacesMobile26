@@ -3,6 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="edu.uc.jonesbr.plantplaces.GPSAPlant">
     <item
+        android:id="@+id/capturecolor"
+        android:onClick="searchByColorClicked"
+        android:title="@string/searchbycolor"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/gpsAPlant"
+        android:onClick="gpsAPlantClicked"
+        android:title="@string/gpsaplant"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
