@@ -7,7 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-public class ColorCaptureActivity extends AppCompatActivity {
+import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
+
+public class ColorCaptureActivity extends PlantPlacesActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,4 +28,8 @@ public class ColorCaptureActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected int getCurrentMenuId() {
+        return R.id.capturecolor;
+    }
 }

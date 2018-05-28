@@ -17,7 +17,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class GPSAPlant extends AppCompatActivity {
+public class GPSAPlant extends PlantPlacesActivity {
 
     @BindView(R.id.actPlantName)
     AutoCompleteTextView actPlantName;
@@ -50,6 +50,8 @@ public class GPSAPlant extends AppCompatActivity {
         Toast.makeText(this, "Plant Name: " + plantName + " Location " + location, Toast.LENGTH_LONG).show();
     }
 
+
+
     @OnClick(R.id.btnOpen)
     public void goToColorCapture() {
 
@@ -58,23 +60,7 @@ public class GPSAPlant extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_gpsaplant, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    /**
-     * This will be invoked when the user clicks the GPS menu
-     * @param menuItem
-     */
-    public void gpsAPlantClicked(MenuItem menuItem) {
-
-    }
-
-    public void searchByColorClicked(MenuItem menuItem) {
-        // Explict intent to invoke another screen.
-        Intent colorCaptureIntent = new Intent(this, ColorCaptureActivity.class);
-        startActivity(colorCaptureIntent);
-        // finish();
+    protected int getCurrentMenuId() {
+        return R.id.gpsAPlant;
     }
 }
