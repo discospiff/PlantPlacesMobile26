@@ -12,4 +12,5 @@
     <string name="title_activity_color_capture">ColorCaptureActivity</string>
     <string name="searchbycolor">Search By Color</string>
     <string name="gpsaplant">GPS a Plant</string>
+    <string name="noExternalReadPermission">Can\'t open the gallery without permission</string>
 </resources>
