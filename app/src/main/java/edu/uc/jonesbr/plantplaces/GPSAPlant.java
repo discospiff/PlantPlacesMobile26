@@ -1,6 +1,9 @@
 package edu.uc.jonesbr.plantplaces;
 
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -40,6 +43,16 @@ public class GPSAPlant extends PlantPlacesActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        // declare and register our BroadcastReceiver.
+        BroadcastReceiver br = new SynchronizeReceiver();
+
+        // add an intent filter to indicate which intents we are intereseted in receiving
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_POWER_CONNECTED);
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+
+        this.registerReceiver(br, filter);
     }
 
 

@@ -23,6 +23,12 @@
             android:name=".ColorCaptureActivity"
             android:label="@string/title_activity_color_capture"
             android:theme="@style/AppTheme.NoActionBar"></activity>
+        <receiver android:name=".SynchronizeReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -13,4 +13,6 @@
     <string name="searchbycolor">Search By Color</string>
     <string name="gpsaplant">GPS a Plant</string>
     <string name="noExternalReadPermission">Can\'t open the gallery without permission</string>
+    <string name="lowpower">Low power mode</string>
+    <string name="enhancedmode">Enhanced Mode</string>
 </resources>
