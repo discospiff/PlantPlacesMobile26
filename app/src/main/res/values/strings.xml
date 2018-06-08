@@ -15,4 +15,6 @@
     <string name="noExternalReadPermission">Can\'t open the gallery without permission</string>
     <string name="lowpower">Low power mode</string>
     <string name="enhancedmode">Enhanced Mode</string>
+    <string name="nocamerapermission">Unable to invoke camera without permission</string>
+    <string name="picturesaved">Picture Saved</string>
 </resources>
