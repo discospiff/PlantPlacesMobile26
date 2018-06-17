@@ -5,10 +5,12 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -21,10 +23,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
@@ -35,15 +41,31 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     public static final int CAMERA_PERMISSION_REQUEST_CODE = 1996;
     public static final int CAMERA_REQUEST_CODE = 1995;
+    public static final int ONE_MINUTE = 60000;
+    public static final int ACCESS_FINE_LOCATION_REQUEST_CODE = 1995;
     @BindView(R.id.actPlantName)
     AutoCompleteTextView actPlantName;
 
     @BindView(R.id.actLocation)
     AutoCompleteTextView actLocation;
+
+    @BindView(R.id.txtLatitude)
+    TextView txtLongitude;
+
+    @BindView(R.id.txtLongitude)
+    TextView txtLatitude;
+
+    @BindView(R.id.chronGPS)
+    Chronometer chronoGPS;
+
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private double longitude;
+    private double latitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +74,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,11 +94,16 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
         this.registerReceiver(br, filter);
 
-        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this)
+        googleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(ONE_MINUTE);
+        locationRequest.setFastestInterval(ONE_MINUTE/4);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
     }
 
@@ -89,7 +117,25 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
     @Override
     public void onConnected(Bundle bundle) {
+        prepRequestLocationUpdates();
+    }
 
+    private void prepRequestLocationUpdates() {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // if the user has already given us this permission, then request updates.
+            requestLocationUpdates();
+        } else {
+            // the user has revoked permission, or never gave us permission, so let's request it.
+            String [] permissionRequest = {Manifest.permission.ACCESS_FINE_LOCATION};
+            requestPermissions(permissionRequest, ACCESS_FINE_LOCATION_REQUEST_CODE);
+        }
+
+    }
+
+    private void requestLocationUpdates() {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+        }
     }
 
     @Override
@@ -100,6 +146,18 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        chronoGPS.stop();
+        chronoGPS.setBase(SystemClock.elapsedRealtime());
+        longitude = location.getLongitude();
+        latitude = location.getLatitude();
+        txtLatitude.setText(Double.toString(latitude));
+        txtLongitude.setText(Double.toString(longitude));
+        // restart the chronometer.
+        chronoGPS.start();
     }
 
     class UndoListener implements View.OnClickListener {
@@ -185,6 +243,14 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
             } else {
                 Toast.makeText(this, R.string.nocamerapermission, Toast.LENGTH_LONG).show();
             }
+        } else if (requestCode == ACCESS_FINE_LOCATION_REQUEST_CODE) {
+            // if we are here, we are hearing back from the location permission.
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // user gave us permission.
+                requestLocationUpdates();
+            } else {
+                Toast.makeText(this, R.string.nogpspermission, Toast.LENGTH_LONG).show();
+            }
         }
 
     }
@@ -192,5 +258,35 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     @Override
     protected int getCurrentMenuId() {
         return R.id.gpsAPlant;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        googleApiClient.disconnect();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        prepRequestLocationUpdates();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        removeLocationUpdates();
+    }
+
+    private void removeLocationUpdates() {
+        if (googleApiClient != null && googleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        }
     }
 }
