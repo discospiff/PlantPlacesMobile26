@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,10 +63,14 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     @BindView(R.id.chronGPS)
     Chronometer chronoGPS;
 
+    @BindView(R.id.btnPause)
+    ImageButton btnPause;
+
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private double longitude;
     private double latitude;
+    private boolean updatesRequested = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +114,18 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
 
     @OnClick(R.id.btnPause)
-    public void doIt() {
-        Snackbar snackbar = Snackbar.make(findViewById(R.id.gpsCoordinatorLayout), "Paused GPS", Snackbar.LENGTH_LONG);
-        snackbar.setAction("UNDO", new UndoListener());
-        snackbar.show();
+    public void toggleUpdates() {
+        if (updatesRequested) {
+            removeLocationUpdates();
+            updatesRequested = false;
+            // change the icon to indicate that location updates are playable.
+            btnPause.setImageDrawable(getDrawable(R.drawable.ic_play));
+        } else {
+            prepRequestLocationUpdates();
+            updatesRequested = true;
+            // show a pause icon
+            btnPause.setImageDrawable(getDrawable(R.drawable.ic_pause));
+        }
     }
 
     @Override

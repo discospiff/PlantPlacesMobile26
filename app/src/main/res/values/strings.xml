@@ -17,4 +17,5 @@
     <string name="enhancedmode">Enhanced Mode</string>
     <string name="nocamerapermission">Unable to invoke camera without permission</string>
     <string name="picturesaved">Picture Saved</string>
+    <string name="nogpspermission">GPS unavailable without permission</string>
 </resources>
