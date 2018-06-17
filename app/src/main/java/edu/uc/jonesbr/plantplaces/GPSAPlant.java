@@ -23,6 +23,10 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,7 +35,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class GPSAPlant extends PlantPlacesActivity {
+public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final int CAMERA_PERMISSION_REQUEST_CODE = 1996;
     public static final int CAMERA_REQUEST_CODE = 1995;
@@ -66,6 +70,13 @@ public class GPSAPlant extends PlantPlacesActivity {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 
         this.registerReceiver(br, filter);
+
+        GoogleApiClient googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
     }
 
 
@@ -74,6 +85,21 @@ public class GPSAPlant extends PlantPlacesActivity {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.gpsCoordinatorLayout), "Paused GPS", Snackbar.LENGTH_LONG);
         snackbar.setAction("UNDO", new UndoListener());
         snackbar.show();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     class UndoListener implements View.OnClickListener {
