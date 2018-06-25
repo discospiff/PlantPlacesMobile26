@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
@@ -36,11 +37,16 @@ import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import edu.uc.jonesbr.plantplaces.dao.IPlantDAO;
+import edu.uc.jonesbr.plantplaces.dao.PlantDAOStub;
+import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
 
 public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -109,6 +115,10 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         locationRequest.setInterval(ONE_MINUTE);
         locationRequest.setFastestInterval(ONE_MINUTE/4);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // start looking for plants to populate autocomplete
+        PlantSearchTask plantSearchTask = new PlantSearchTask();
+        plantSearchTask.execute("e");
 
     }
 
@@ -302,4 +312,23 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
             LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         }
     }
+
+    class PlantSearchTask extends AsyncTask<String, Integer, List<PlantDTO>> {
+
+        @Override
+        protected void onPostExecute(List<PlantDTO> plantDTOS) {
+            super.onPostExecute(plantDTOS);
+        }
+
+        @Override
+        protected List<PlantDTO> doInBackground(String... searchTerms) {
+            List<PlantDTO> allPlants = new ArrayList<PlantDTO>();
+            // declare a variable for our DAO class that will do a lot of the networking for us.
+            IPlantDAO plantDAO = new PlantDAOStub();
+            String searchTerm = searchTerms[0];
+            allPlants = plantDAO.search(searchTerm);
+            return allPlants;
+        }
+    }
+
 }
