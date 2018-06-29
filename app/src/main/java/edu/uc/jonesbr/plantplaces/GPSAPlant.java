@@ -22,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -44,9 +45,15 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import edu.uc.jonesbr.plantplaces.dao.GetPlantService;
 import edu.uc.jonesbr.plantplaces.dao.IPlantDAO;
 import edu.uc.jonesbr.plantplaces.dao.PlantDAOStub;
+import edu.uc.jonesbr.plantplaces.dao.RetrofitClientInstance;
 import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
+import edu.uc.jonesbr.plantplaces.dto.PlantList;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -119,6 +126,22 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         // start looking for plants to populate autocomplete
         PlantSearchTask plantSearchTask = new PlantSearchTask();
         plantSearchTask.execute("e");
+
+        GetPlantService service = RetrofitClientInstance.getRetrofitInstance().create(GetPlantService.class);
+        Call<PlantList> call = service.getAllPlants();
+        call.enqueue(new Callback<PlantList>() {
+            @Override
+            public void onResponse(Call<PlantList> call, Response<PlantList> response) {
+                PlantList body = response.body();
+                List<PlantDTO> plants = body.getPlants();
+                plants.size();
+            }
+
+            @Override
+            public void onFailure(Call<PlantList> call, Throwable t) {
+                int i = 1 + 1;
+            }
+        });
 
     }
 
@@ -318,6 +341,11 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         @Override
         protected void onPostExecute(List<PlantDTO> plantDTOS) {
             super.onPostExecute(plantDTOS);
+            // adapt the data to be UI friendly.
+            ArrayAdapter<PlantDTO> plantAdapter = new ArrayAdapter<PlantDTO>
+                    (GPSAPlant.this, android.R.layout.simple_list_item_1, plantDTOS);
+            // associate the data with the auto complete text view.
+            actPlantName.setAdapter(plantAdapter);
         }
 
         @Override

@@ -1,16 +1,23 @@
 package edu.uc.jonesbr.plantplaces.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * A plant has a genus, species, cultivar, common name.
  * Created by ucint on 5/17/2018.
  */
 public class PlantDTO {
 
+    @SerializedName("id")
     private int guid;
     private int cacheId;
+    @SerializedName("genus")
     private String genus;
+    @SerializedName("species")
     private String species;
+    @SerializedName("cultivar")
     private String cultivar;
+    @SerializedName("common")
     private String common;
 
 
