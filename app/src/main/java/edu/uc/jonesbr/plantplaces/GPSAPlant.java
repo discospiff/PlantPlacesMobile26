@@ -1,7 +1,9 @@
 package edu.uc.jonesbr.plantplaces;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -86,6 +88,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     private double longitude;
     private double latitude;
     private boolean updatesRequested = true;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -348,6 +351,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
                     (GPSAPlant.this, android.R.layout.simple_list_item_1, plantDTOS);
             // associate the data with the auto complete text view.
             actPlantName.setAdapter(plantAdapter);
+            progressDialog.dismiss();
         }
 
         @Override
@@ -358,11 +362,53 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
             String searchTerm = searchTerms[0];
             try {
                 allPlants = plantDAO.search(searchTerm);
+
+                int plantCounter = 0;
+
+                // iterate over all of the plants we fetched, and place them into the local database.
+                for (PlantDTO plant  : allPlants) {
+                    // act like we're saving to the database.
+                    plantCounter++;
+
+                    if (plantCounter % (allPlants.size() / 25) == 0) {
+                        // update progress
+                        publishProgress(plantCounter * 100 / allPlants.size());
+                    }
+
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return allPlants;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // setup a progress dialog
+            progressDialog = new ProgressDialog(GPSAPlant.this);
+            progressDialog.setCancelable(true);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setMax(100);
+            progressDialog.setMessage(getString(R.string.downloadingPlantNames));
+
+            // make a button
+            progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+
+            progressDialog.show();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+            progressDialog.setProgress(values[0]);
+        }
     }
 
 }
+

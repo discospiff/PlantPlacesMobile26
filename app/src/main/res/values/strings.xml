@@ -18,4 +18,6 @@
     <string name="nocamerapermission">Unable to invoke camera without permission</string>
     <string name="picturesaved">Picture Saved</string>
     <string name="nogpspermission">GPS unavailable without permission</string>
+    <string name="downloadingPlantNames">Downloading Plant Names</string>
+    <string name="cancel">Cancel</string>
 </resources>
