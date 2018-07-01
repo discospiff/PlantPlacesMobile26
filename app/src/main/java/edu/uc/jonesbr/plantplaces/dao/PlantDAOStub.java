@@ -1,5 +1,6 @@
 package edu.uc.jonesbr.plantplaces.dao;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class PlantDAOStub implements IPlantDAO {
      * @return a list of matching plants.
      */
     @Override
-    public List<PlantDTO> search(String searchTerm) {
+    public List<PlantDTO> search(String searchTerm) throws IOException {
         List<PlantDTO> allPlants = new ArrayList<PlantDTO>();
 
         PlantDTO whiteOak = new PlantDTO();

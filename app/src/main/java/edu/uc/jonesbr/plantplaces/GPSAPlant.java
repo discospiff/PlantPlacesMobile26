@@ -37,6 +37,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +49,7 @@ import butterknife.OnClick;
 import edu.uc.jonesbr.plantplaces.dao.GetPlantService;
 import edu.uc.jonesbr.plantplaces.dao.IPlantDAO;
 import edu.uc.jonesbr.plantplaces.dao.PlantDAOStub;
+import edu.uc.jonesbr.plantplaces.dao.PlantJSONDAO;
 import edu.uc.jonesbr.plantplaces.dao.RetrofitClientInstance;
 import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
 import edu.uc.jonesbr.plantplaces.dto.PlantList;
@@ -352,9 +354,13 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         protected List<PlantDTO> doInBackground(String... searchTerms) {
             List<PlantDTO> allPlants = new ArrayList<PlantDTO>();
             // declare a variable for our DAO class that will do a lot of the networking for us.
-            IPlantDAO plantDAO = new PlantDAOStub();
+            IPlantDAO plantDAO = new PlantJSONDAO();
             String searchTerm = searchTerms[0];
-            allPlants = plantDAO.search(searchTerm);
+            try {
+                allPlants = plantDAO.search(searchTerm);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return allPlants;
         }
     }

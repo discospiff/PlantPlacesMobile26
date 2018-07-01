@@ -1,5 +1,6 @@
 package edu.uc.jonesbr.plantplaces.dao;
 
+import java.io.IOException;
 import java.util.List;
 
 import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
@@ -16,5 +17,5 @@ public interface IPlantDAO {
      * @param searchTerm A text representation of the user's search term.
      * @return a list of matching plants.
      */
-    public List<PlantDTO> search(String searchTerm);
+    public List<PlantDTO> search(String searchTerm) throws IOException;
 }
