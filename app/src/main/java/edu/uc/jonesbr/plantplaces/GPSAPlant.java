@@ -129,21 +129,21 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         PlantSearchTask plantSearchTask = new PlantSearchTask();
         plantSearchTask.execute("e");
 
-        GetPlantService service = RetrofitClientInstance.getRetrofitInstance().create(GetPlantService.class);
-        Call<PlantList> call = service.getAllPlants();
-        call.enqueue(new Callback<PlantList>() {
-            @Override
-            public void onResponse(Call<PlantList> call, Response<PlantList> response) {
-                PlantList body = response.body();
-                List<PlantDTO> plants = body.getPlants();
-                plants.size();
-            }
-
-            @Override
-            public void onFailure(Call<PlantList> call, Throwable t) {
-                int i = 1 + 1;
-            }
-        });
+//        GetPlantService service = RetrofitClientInstance.getRetrofitInstance().create(GetPlantService.class);
+//        Call<PlantList> call = service.getAllPlants();
+//        call.enqueue(new Callback<PlantList>() {
+//            @Override
+//            public void onResponse(Call<PlantList> call, Response<PlantList> response) {
+//                PlantList body = response.body();
+//                List<PlantDTO> plants = body.getPlants();
+//                plants.size();
+//            }
+//
+//            @Override
+//            public void onFailure(Call<PlantList> call, Throwable t) {
+//                int i = 1 + 1;
+//            }
+//        });
 
     }
 
@@ -358,7 +358,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
             String searchTerm = searchTerms[0];
             try {
                 allPlants = plantDAO.search(searchTerm);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return allPlants;
