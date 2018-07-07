@@ -24,6 +24,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -99,6 +100,10 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     private double latitude;
     private boolean updatesRequested = true;
     private ProgressDialog progressDialog;
+    private int plantGuid;
+    private String string;
+    private String plantString;
+    private boolean knownPlant;
 
 
     @Override
@@ -180,7 +185,10 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
                     }
                 });
 
-
+        PlantSelected plantSelected = new PlantSelected();
+        actPlantName.setOnItemSelectedListener(plantSelected);
+        actPlantName.setOnItemClickListener(plantSelected);
+        actPlantName.setOnFocusChangeListener(plantSelected);
     }
 
 
@@ -273,6 +281,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         specimenDTO.setLongitude(Double.toString(longitude));
         specimenDTO.setDescription(edtDescription.getText().toString());
         specimenDTO.setLocation(actLocation.getText().toString());
+        specimenDTO.setPlantId(plantGuid);
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference reference = firebaseDatabase.getReference();
@@ -455,6 +464,42 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
             progressDialog.setProgress(values[0]);
+        }
+    }
+
+    class PlantSelected implements AdapterView.OnItemSelectedListener, AdapterView.OnItemClickListener, View.OnFocusChangeListener {
+
+        @Override
+        public void onFocusChange(View view, boolean b) {
+            String currentPlantName = actPlantName.getText().toString();
+            if(!currentPlantName.isEmpty() && !currentPlantName.equals(plantString)) {
+                // we are in a new, undefined plant.
+                // navigate to a screen where the user can enter a new plant.
+                Toast.makeText(GPSAPlant.this, "New Plant!", Toast.LENGTH_LONG).show();
+                plantGuid = 0;
+                knownPlant = false;
+            }
+        }
+
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long row) {
+            PlantDTO plant = (PlantDTO) actPlantName.getAdapter().getItem(position);
+            plantGuid = plant.getGuid();
+            plantString = actPlantName.getText().toString();
+            knownPlant = true;
+        }
+
+        @Override
+        public void onItemSelected(AdapterView<?> adapterView, View view, int position, long row) {
+            PlantDTO plant = (PlantDTO) actPlantName.getAdapter().getItem(position);
+            plantGuid = plant.getGuid();
+            plantString = actPlantName.getText().toString();
+            knownPlant = true;
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> adapterView) {
+
         }
     }
 
