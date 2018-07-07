@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "699520336674",
+    "firebase_url": "https://plantplaces26.firebaseio.com",
+    "project_id": "plantplaces26",
+    "storage_bucket": "plantplaces26.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699520336674:android:32c0daa864957d90",
+        "android_client_info": {
+          "package_name": "edu.uc.jonesbr.plantplaces"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699520336674-9kehipvh9rvp92fep8ho97cugotlqc98.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUxqPwKab0-EhfEBlEnEuxatDiFFbuHM4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

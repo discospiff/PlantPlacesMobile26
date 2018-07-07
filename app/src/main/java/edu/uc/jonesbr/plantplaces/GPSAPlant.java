@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +38,11 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +61,7 @@ import edu.uc.jonesbr.plantplaces.dao.PlantJSONDAO;
 import edu.uc.jonesbr.plantplaces.dao.RetrofitClientInstance;
 import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
 import edu.uc.jonesbr.plantplaces.dto.PlantList;
+import edu.uc.jonesbr.plantplaces.dto.SpecimenDTO;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -70,6 +77,9 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
     @BindView(R.id.actLocation)
     AutoCompleteTextView actLocation;
+
+    @BindView(R.id.edtDescription)
+    EditText edtDescription;
 
     @BindView(R.id.txtLatitude)
     TextView txtLongitude;
@@ -89,6 +99,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     private double latitude;
     private boolean updatesRequested = true;
     private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +158,28 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 //                int i = 1 + 1;
 //            }
 //        });
+
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference reference = firebaseDatabase.getReference();
+        reference.child("specimens")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> children = dataSnapshot.getChildren();
+
+                        for (DataSnapshot child: children)
+                        {
+                            SpecimenDTO specimenDTO = child.getValue(SpecimenDTO.class);
+                            Toast.makeText(GPSAPlant.this, "Data: " + specimenDTO.toString(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
 
     }
 
@@ -229,6 +262,21 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     public void goToColorCapture() {
 
 
+
+    }
+
+    @OnClick(R.id.btnSave)
+    public void saveSpecimen() {
+        SpecimenDTO specimenDTO = new SpecimenDTO();
+        specimenDTO.setPlantName(actPlantName.getText().toString());
+        specimenDTO.setLatitude(Double.toString(latitude));
+        specimenDTO.setLongitude(Double.toString(longitude));
+        specimenDTO.setDescription(edtDescription.getText().toString());
+        specimenDTO.setLocation(actLocation.getText().toString());
+
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference reference = firebaseDatabase.getReference();
+        reference.child("specimens").push().setValue(specimenDTO);
 
     }
 
