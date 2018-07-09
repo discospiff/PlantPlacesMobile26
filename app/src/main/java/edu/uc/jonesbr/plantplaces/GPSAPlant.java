@@ -21,8 +21,10 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -67,12 +69,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GestureDetector.OnGestureListener {
 
     public static final int CAMERA_PERMISSION_REQUEST_CODE = 1996;
     public static final int CAMERA_REQUEST_CODE = 1995;
     public static final int ONE_MINUTE = 60000;
     public static final int ACCESS_FINE_LOCATION_REQUEST_CODE = 1995;
+    public static final int SWIPE_THRESHOLD = 100;
+    public static final int SWIPE_VELOCITY_THRESHOLD = 100;
     @BindView(R.id.actPlantName)
     AutoCompleteTextView actPlantName;
 
@@ -104,6 +108,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     private String string;
     private String plantString;
     private boolean knownPlant;
+    private GestureDetector gestureDetector;
 
 
     @Override
@@ -189,6 +194,8 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         actPlantName.setOnItemSelectedListener(plantSelected);
         actPlantName.setOnItemClickListener(plantSelected);
         actPlantName.setOnFocusChangeListener(plantSelected);
+
+        gestureDetector = new GestureDetector(this);
     }
 
 
@@ -252,6 +259,85 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         chronoGPS.start();
     }
 
+    @Override
+    public boolean onDown(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent motionEvent) {
+        return false;
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent motionEvent) {
+
+    }
+
+    @Override
+    public boolean onFling(MotionEvent downEvent, MotionEvent moveEvent, float velocityX, float velocityY) {
+        boolean result = false;
+        float diffY = moveEvent.getY() - downEvent.getY();
+        float diffX = moveEvent.getX() - downEvent.getX();
+        // which was greater?  movement across Y or X?
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // right or left swipe
+            if (Math.abs(diffX)> SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                if (diffX > 0) {
+                    onSwipeRight();
+                } else {
+                    onSwipeLeft();
+                }
+                result = true;
+            }
+        } else {
+            // up or down swipe
+            if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY)> SWIPE_VELOCITY_THRESHOLD) {
+                if (diffY > 0) {
+                    onSwipeBottom();
+                } else {
+                    onSwipeTop();
+                }
+                result = true;
+            }
+        }
+
+        return result;
+    }
+
+    private void onSwipeTop() {
+        Toast.makeText(this, "Swipe Top", Toast.LENGTH_LONG).show();
+    }
+
+    private void onSwipeBottom() {
+        Toast.makeText(this, "Swipe Bottom", Toast.LENGTH_LONG).show();
+    }
+
+    private void onSwipeLeft() {
+        Toast.makeText(this, "Swipe Left", Toast.LENGTH_LONG).show();
+    }
+
+    private void onSwipeRight() {
+        Toast.makeText(this, "Swipe Right", Toast.LENGTH_LONG).show();
+        saveSpecimen();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        gestureDetector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
     class UndoListener implements View.OnClickListener {
 
         @Override
@@ -263,8 +349,6 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
         }
     }
-
-
 
     @OnClick(R.id.btnOpen)
     public void goToColorCapture() {
