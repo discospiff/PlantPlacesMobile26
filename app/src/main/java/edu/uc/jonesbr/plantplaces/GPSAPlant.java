@@ -354,7 +354,6 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     public void goToColorCapture() {
 
 
-
     }
 
     @OnClick(R.id.btnSave)
