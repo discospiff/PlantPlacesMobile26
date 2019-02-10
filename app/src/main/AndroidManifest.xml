@@ -25,7 +25,17 @@
         <activity
             android:name=".ColorCaptureActivity"
             android:label="@string/title_activity_color_capture"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter android:label="DeepLink">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="http"
+                    android:host="www.plantplaces.com"
+                    android:pathPrefix="/colorcapture.shtml"/>
+
+            </intent-filter>
+        </activity>
         <receiver android:name=".SynchronizeReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
