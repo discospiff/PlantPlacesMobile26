@@ -38,8 +38,12 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -69,7 +73,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GestureDetector.OnGestureListener {
+public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.OnGestureListener {
 
     public static final int CAMERA_PERMISSION_REQUEST_CODE = 1996;
     public static final int CAMERA_REQUEST_CODE = 1995;
@@ -98,7 +102,6 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     @BindView(R.id.btnPause)
     ImageButton btnPause;
 
-    private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private double longitude;
     private double latitude;
@@ -109,6 +112,8 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     private String plantString;
     private boolean knownPlant;
     private GestureDetector gestureDetector;
+    private FusedLocationProviderClient client;
+    private LocationCallback locationCallback;
 
 
     @Override
@@ -138,11 +143,27 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
 
         this.registerReceiver(br, filter);
 
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+        client = LocationServices.getFusedLocationProviderClient(this);
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                chronoGPS.stop();
+                chronoGPS.setBase(SystemClock.elapsedRealtime());
+                longitude = locationResult.getLastLocation().getLongitude();
+                latitude = locationResult.getLastLocation().getLatitude();
+                txtLatitude.setText(Double.toString(latitude));
+                txtLongitude.setText(Double.toString(longitude));
+                // restart the chronometer.
+                chronoGPS.start();
+            }
+
+            @Override
+            public void onLocationAvailability(LocationAvailability locationAvailability) {
+                super.onLocationAvailability(locationAvailability);
+            }
+        };
 
         locationRequest = new LocationRequest();
         locationRequest.setInterval(ONE_MINUTE);
@@ -152,22 +173,6 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         // start looking for plants to populate autocomplete
         PlantSearchTask plantSearchTask = new PlantSearchTask();
         plantSearchTask.execute("e");
-
-//        GetPlantService service = RetrofitClientInstance.getRetrofitInstance().create(GetPlantService.class);
-//        Call<PlantList> call = service.getAllPlants();
-//        call.enqueue(new Callback<PlantList>() {
-//            @Override
-//            public void onResponse(Call<PlantList> call, Response<PlantList> response) {
-//                PlantList body = response.body();
-//                List<PlantDTO> plants = body.getPlants();
-//                plants.size();
-//            }
-//
-//            @Override
-//            public void onFailure(Call<PlantList> call, Throwable t) {
-//                int i = 1 + 1;
-//            }
-//        });
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference reference = firebaseDatabase.getReference();
@@ -214,11 +219,6 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
         }
     }
 
-    @Override
-    public void onConnected(Bundle bundle) {
-        prepRequestLocationUpdates();
-    }
-
     private void prepRequestLocationUpdates() {
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // if the user has already given us this permission, then request updates.
@@ -232,31 +232,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     }
 
     private void requestLocationUpdates() {
-        if (googleApiClient != null && googleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        chronoGPS.stop();
-        chronoGPS.setBase(SystemClock.elapsedRealtime());
-        longitude = location.getLongitude();
-        latitude = location.getLatitude();
-        txtLatitude.setText(Double.toString(latitude));
-        txtLongitude.setText(Double.toString(longitude));
-        // restart the chronometer.
-        chronoGPS.start();
+        client.requestLocationUpdates(locationRequest, locationCallback, getMainLooper());
     }
 
     @Override
@@ -454,13 +430,11 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     @Override
     protected void onStart() {
         super.onStart();
-        googleApiClient.connect();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        googleApiClient.disconnect();
     }
 
     @Override
@@ -476,9 +450,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GoogleApiClient.Co
     }
 
     private void removeLocationUpdates() {
-        if (googleApiClient != null && googleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        }
+        client.removeLocationUpdates(locationCallback);
     }
 
     class PlantSearchTask extends AsyncTask<String, Integer, List<PlantDTO>> {
