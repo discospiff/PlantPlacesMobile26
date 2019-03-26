@@ -36,6 +36,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -45,6 +46,8 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -81,6 +85,10 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     public static final int ACCESS_FINE_LOCATION_REQUEST_CODE = 1995;
     public static final int SWIPE_THRESHOLD = 100;
     public static final int SWIPE_VELOCITY_THRESHOLD = 100;
+    public static final int AUTHORIZATION_REQUEST_CODE = 1994;
+
+    private FirebaseUser user;
+    
     @BindView(R.id.actPlantName)
     AutoCompleteTextView actPlantName;
 
@@ -120,11 +128,11 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gpsaplant);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -334,6 +342,18 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
 
     @OnClick(R.id.btnSave)
     public void saveSpecimen() {
+        if (user != null) {
+            // if the user is not null, then the user has authenticated already.
+            saveSpecimenToFirebase();
+        } else {
+            // we need to authenticate
+            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build());
+            startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().
+                    setAvailableProviders(providers).build(), AUTHORIZATION_REQUEST_CODE);
+        }
+    }
+
+    private void saveSpecimenToFirebase() {
         SpecimenDTO specimenDTO = new SpecimenDTO();
         specimenDTO.setPlantName(actPlantName.getText().toString());
         specimenDTO.setLatitude(Double.toString(latitude));
@@ -396,6 +416,13 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
         if (resultCode == RESULT_OK) {
             if (requestCode == CAMERA_REQUEST_CODE) {
                 Toast.makeText(this, R.string.picturesaved, Toast.LENGTH_LONG).show();
+            } else if (requestCode == AUTHORIZATION_REQUEST_CODE) {
+                user = FirebaseAuth.getInstance().getCurrentUser();
+                saveSpecimenToFirebase();
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            if (requestCode == AUTHORIZATION_REQUEST_CODE) {
+                Toast.makeText(this, "Cannot save without authentication", Toast.LENGTH_LONG).show();
             }
         }
     }
