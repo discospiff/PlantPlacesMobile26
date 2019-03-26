@@ -347,7 +347,8 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
             saveSpecimenToFirebase();
         } else {
             // we need to authenticate
-            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build());
+            List<AuthUI.IdpConfig> providers = Arrays.asList(new AuthUI.IdpConfig.EmailBuilder().build(),
+                    new AuthUI.IdpConfig.GoogleBuilder().build());
             startActivityForResult(AuthUI.getInstance().createSignInIntentBuilder().
                     setAvailableProviders(providers).build(), AUTHORIZATION_REQUEST_CODE);
         }
