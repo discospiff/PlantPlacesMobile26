@@ -46,6 +46,9 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -53,6 +56,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +95,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     public static final int AUTHORIZATION_REQUEST_CODE = 1994;
 
     private FirebaseUser user;
+    private Uri uri;
     
     @BindView(R.id.actPlantName)
     AutoCompleteTextView actPlantName;
@@ -363,6 +371,40 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
         specimenDTO.setLocation(actLocation.getText().toString());
         specimenDTO.setPlantId(plantGuid);
 
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+        final StorageReference imageRef = storageReference.child("images/" + uri.getLastPathSegment());
+        UploadTask uploadTask = imageRef.putFile(uri);
+
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                int i = 1 + 1;
+                // TODO properly handle this error.
+            }
+        });
+
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // this is where we will end up if our image uploads successfully.
+                StorageMetadata snapshotMetadata = taskSnapshot.getMetadata();
+                Task<Uri> downloadUrl = imageRef.getDownloadUrl();
+                downloadUrl.addOnSuccessListener(new OnSuccessListener<Uri> () {
+
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        String imageReference = uri.toString();
+                        // TODO update our Firebase DTO with the image location.
+                    }
+                });
+            }
+        });
+
+
+
+
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference reference = firebaseDatabase.getReference();
         reference.child("specimens").push().setValue(specimenDTO);
@@ -392,7 +434,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
         File picFile = new File(imagePath, getPictureName());
 
         // convert file to URI
-        Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", picFile);
+        uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", picFile);
         // where do I want to save the image?
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         // pass permission to the camera
