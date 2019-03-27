@@ -363,7 +363,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     }
 
     private void saveSpecimenToFirebase() {
-        SpecimenDTO specimenDTO = new SpecimenDTO();
+        final SpecimenDTO specimenDTO = new SpecimenDTO();
         specimenDTO.setPlantName(actPlantName.getText().toString());
         specimenDTO.setLatitude(Double.toString(latitude));
         specimenDTO.setLongitude(Double.toString(longitude));
@@ -371,43 +371,50 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
         specimenDTO.setLocation(actLocation.getText().toString());
         specimenDTO.setPlantId(plantGuid);
 
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-        final StorageReference imageRef = storageReference.child("images/" + uri.getLastPathSegment());
-        UploadTask uploadTask = imageRef.putFile(uri);
-
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                int i = 1 + 1;
-                // TODO properly handle this error.
-            }
-        });
-
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // this is where we will end up if our image uploads successfully.
-                StorageMetadata snapshotMetadata = taskSnapshot.getMetadata();
-                Task<Uri> downloadUrl = imageRef.getDownloadUrl();
-                downloadUrl.addOnSuccessListener(new OnSuccessListener<Uri> () {
-
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String imageReference = uri.toString();
-                        // TODO update our Firebase DTO with the image location.
-                    }
-                });
-            }
-        });
-
-
-
-
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference reference = firebaseDatabase.getReference();
-        reference.child("specimens").push().setValue(specimenDTO);
+        final DatabaseReference reference = firebaseDatabase.getReference();
+
+        if (uri != null) {
+            StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+            final StorageReference imageRef = storageReference.child("images/" + uri.getLastPathSegment());
+            UploadTask uploadTask = imageRef.putFile(uri);
+
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    int i = 1 + 1;
+                    // TODO properly handle this error.
+                }
+            });
+
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // this is where we will end up if our image uploads successfully.
+                    StorageMetadata snapshotMetadata = taskSnapshot.getMetadata();
+                    Task<Uri> downloadUrl = imageRef.getDownloadUrl();
+                    downloadUrl.addOnSuccessListener(new OnSuccessListener<Uri>() {
+
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String imageReference = uri.toString();
+                            reference.child("specimens").child(specimenDTO.getKey()).child("imageUrl").setValue(imageReference);
+                            specimenDTO.setImageUrl(imageReference);
+                        }
+                    });
+                }
+            });
+        }
+
+        DatabaseReference specimenReference = reference.child("specimens").push();
+        specimenDTO.setImageUrl(" ");
+        specimenReference.setValue(specimenDTO);
+        // update the DTO with the Firebase generated key.
+        String key = specimenReference.getKey();
+        specimenDTO.setKey(key);
+
 
     }
 

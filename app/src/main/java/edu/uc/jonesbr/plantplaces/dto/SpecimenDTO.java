@@ -12,6 +12,8 @@ public class SpecimenDTO {
     private String longitude;
     private String location;
     private String description;
+    private String key;
+    private String imageUrl;
 
     public int getSpecimenId() {
         return specimenId;
@@ -72,5 +74,21 @@ public class SpecimenDTO {
     @Override
     public String toString() {
         return plantName + " " + description + " " + location + " Lat: " + latitude + " Lng: " + longitude;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
