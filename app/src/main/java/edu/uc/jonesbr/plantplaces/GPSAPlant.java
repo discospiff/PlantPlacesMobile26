@@ -376,7 +376,7 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
 
         if (uri != null) {
             StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-            final StorageReference imageRef = storageReference.child("images/" + uri.getLastPathSegment());
+            final StorageReference imageRef = storageReference.child("images/" + user.getUid() + "/" + uri.getLastPathSegment());
             UploadTask uploadTask = imageRef.putFile(uri);
 
             uploadTask.addOnFailureListener(new OnFailureListener() {
