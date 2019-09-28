@@ -1,35 +1,39 @@
 package edu.uc.jonesbr.plantplaces;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.DialogFragment;
+
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.GestureDetector;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -37,12 +41,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationAvailability;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
@@ -62,7 +63,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,17 +72,10 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import edu.uc.jonesbr.plantplaces.dao.GetPlantService;
 import edu.uc.jonesbr.plantplaces.dao.IPlantDAO;
-import edu.uc.jonesbr.plantplaces.dao.PlantDAOStub;
 import edu.uc.jonesbr.plantplaces.dao.PlantJSONDAO;
-import edu.uc.jonesbr.plantplaces.dao.RetrofitClientInstance;
 import edu.uc.jonesbr.plantplaces.dto.PlantDTO;
-import edu.uc.jonesbr.plantplaces.dto.PlantList;
 import edu.uc.jonesbr.plantplaces.dto.SpecimenDTO;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.OnGestureListener {
 
@@ -93,6 +86,8 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     public static final int SWIPE_THRESHOLD = 100;
     public static final int SWIPE_VELOCITY_THRESHOLD = 100;
     public static final int AUTHORIZATION_REQUEST_CODE = 1994;
+    public static final String PLANT_PLACES_PREFS = "PLANT_PLACES_PREFS";
+    public static final String TERMS_AND_CONDITIONS = "TERMS_AND_CONDITIONS";
 
     private FirebaseUser user;
     private Uri uri;
@@ -130,10 +125,12 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     private GestureDetector gestureDetector;
     private FusedLocationProviderClient client;
     private LocationCallback locationCallback;
+    private Bundle savedInstanceState;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.savedInstanceState = savedInstanceState;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gpsaplant);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -517,6 +514,14 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
     @Override
     protected void onResume() {
         super.onResume();
+
+        SharedPreferences sharedPreferences = getSharedPreferences(PLANT_PLACES_PREFS, Context.MODE_PRIVATE);
+        if (!sharedPreferences.getBoolean(TERMS_AND_CONDITIONS, false)) {
+            TermsAndConditionsDialogFragment tsandcs = new TermsAndConditionsDialogFragment();
+            Dialog dialog = tsandcs.onCreateDialog(savedInstanceState);
+            dialog.show();
+            ((TextView) dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+        }
         prepRequestLocationUpdates();
     }
 
@@ -632,6 +637,27 @@ public class GPSAPlant extends PlantPlacesActivity implements GestureDetector.On
         @Override
         public void onNothingSelected(AdapterView<?> adapterView) {
 
+        }
+    }
+
+    public class TermsAndConditionsDialogFragment extends DialogFragment {
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(GPSAPlant.this);
+            builder.setMessage(Html.fromHtml("By using this app, you agree to our <a href=\"https://www.plantplaces.com/tsandcs.shtml\">Terms and Conditions</a> and <a href=\"https://www.plantplaces.com/privacy.shtml\">Privacy Policy</a>"))
+                    .setPositiveButton("I agree", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // make note that the user agreed.
+                            SharedPreferences prefs = GPSAPlant.this.getSharedPreferences(PLANT_PLACES_PREFS, Context.MODE_PRIVATE);
+                            SharedPreferences.Editor edit = prefs.edit();
+                            edit.putBoolean(TERMS_AND_CONDITIONS, true);
+                            edit.commit();
+                        }
+                    });
+            return builder.create();
         }
     }
 
